@@ -13,6 +13,14 @@ class Mesh extends Drawable {
 
   objString: string;
 
+
+  offsets: Float32Array;
+  transform1: Float32Array;
+  transform2: Float32Array;
+  transform3: Float32Array;
+  transform4: Float32Array;
+
+
   constructor(objString: string, center: vec3) {
     super(); // Call the constructor of the super class. This is required.
     this.center = vec4.fromValues(center[0], center[1], center[2], 1);
@@ -20,7 +28,8 @@ class Mesh extends Drawable {
     this.objString = objString;
   }
 
-  create() {  
+  create() {//what? In Mesh.create(), set its numInstances member variable to 1 to start. This way you will be able to at least see one mesh instance being drawn.
+
     let posTemp: Array<number> = [];
     let norTemp: Array<number> = [];
     let uvsTemp: Array<number> = [];
@@ -53,11 +62,25 @@ class Mesh extends Drawable {
     this.positions = new Float32Array(posTemp);
     this.uvs = new Float32Array(uvsTemp);
 
+
+          //
+          // this.indices = new Uint32Array([0, 1, 2,
+          //                                 0, 2, 3]);
+          // this.positions = new Float32Array([-0.5, -0.5, 0, 1,
+          //                                    0.5, -0.5, 0, 1,
+          //                                    0.5, 0.5, 0, 1,
+          //                                    -0.5, 0.5, 0, 1]);
+
     this.generateIdx();
     this.generatePos();
     this.generateNor();
     this.generateUV();
     this.generateCol();
+    // this.generateTranslate();
+    this.generateTransform1();
+    this.generateTransform2();
+    this.generateTransform3();
+    this.generateTransform4();
 
     this.count = this.indices.length;
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.bufIdx);
@@ -74,9 +97,35 @@ class Mesh extends Drawable {
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.bufUV);
     gl.bufferData(gl.ARRAY_BUFFER, this.uvs, gl.STATIC_DRAW);
-
+    // this.numInstances = 2;
     console.log(`Created Mesh from OBJ`);
     this.objString = ""; // hacky clear
+  }
+
+  setInstanceVBOs(colors: Float32Array,
+    transform1: Float32Array, transform2: Float32Array,
+    transform3: Float32Array, transform4: Float32Array) {
+
+    this.colors = colors;
+    // this.offsets = offsets;
+    this.transform1 = transform1;
+    this.transform2 = transform2;
+    this.transform3 = transform3;
+    this.transform4 = transform4;
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.bufCol);
+    gl.bufferData(gl.ARRAY_BUFFER, this.colors, gl.STATIC_DRAW);
+    // gl.bindBuffer(gl.ARRAY_BUFFER, this.bufTranslate);
+    // gl.bufferData(gl.ARRAY_BUFFER, this.offsets, gl.STATIC_DRAW);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.bufTransform1);
+    gl.bufferData(gl.ARRAY_BUFFER, this.transform1, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.bufTransform2);
+    gl.bufferData(gl.ARRAY_BUFFER, this.transform2, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.bufTransform3);
+    gl.bufferData(gl.ARRAY_BUFFER, this.transform3, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.bufTransform4);
+    gl.bufferData(gl.ARRAY_BUFFER, this.transform4, gl.STATIC_DRAW);
   }
 };
 

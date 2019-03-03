@@ -1,52 +1,108 @@
-import {vec3} from 'gl-matrix';
+import {vec3, mat4} from 'gl-matrix';
 import * as Stats from 'stats-js';
 import * as DAT from 'dat-gui';
 import Square from './geometry/Square';
+import Mesh from './geometry/Mesh';
 import ScreenQuad from './geometry/ScreenQuad';
 import OpenGLRenderer from './rendering/gl/OpenGLRenderer';
 import Camera from './Camera';
-import {setGL} from './globals';
+import {setGL, readTextFile} from './globals';
 import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
-
+import Lsystem from'./L-systems/Lsystem';
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
 const controls = {
+  'rotation_angle': 20,
+  'iterations': 1,
+  'Load Scene': loadScene, // A function pointer, essentially
 };
 
 let square: Square;
 let screenQuad: ScreenQuad;
 let time: number = 0.0;
 
+let axiom: string;
+let transformations: mat4[];
+let cylinderMesh: Mesh;
+let bushLeavesMesh: Mesh;
+let lsystem: Lsystem;
+
+let obj0: string = readTextFile('./Cylinder.obj')
+let obj1: string = readTextFile('./BushLeaves.obj')
+
 function loadScene() {
   square = new Square();
   square.create();
   screenQuad = new ScreenQuad();
   screenQuad.create();
+  cylinderMesh = new Mesh(obj0, vec3.fromValues(0.0, 0.0, 0.0));
+  cylinderMesh.create();
 
-  // Set up instanced rendering data arrays here.
-  // This example creates a set of positional
-  // offsets and gradiated colors for a 100x100 grid
-  // of squares, even though the VBO data for just
-  // one square is actually passed to the GPU
-  let offsetsArray = [];
+  bushLeavesMesh = new Mesh(obj1, vec3.fromValues(0.0, 0.0, 0.0));
+  bushLeavesMesh.create();
+
+  axiom ='F';
+  transformations = [];
+  lsystem = new Lsystem(axiom, controls.iterations, controls.rotation_angle);
+  console.log(lsystem.grammar);
+  lsystem.expandGrammar();
+  lsystem.executeDrawing();
+
+
+  // transformations = lsystem.trans_mat;
+  // console.log(transformations.length);
+
+  let branchColor = [142./255., 139./255., 134./255., 1.0];
+  let leavesColor= [247./255., 254./255., 255./255., 1.0];
+
+  setTransArrays(cylinderMesh,lsystem.branch_trans_mat, branchColor);
+  setTransArrays(bushLeavesMesh,lsystem.leaves_trans_mat, leavesColor);
+}
+
+function setTransArrays(mesh: Mesh, transformations: mat4[], col: number[]) {
   let colorsArray = [];
-  let n: number = 100.0;
-  for(let i = 0; i < n; i++) {
-    for(let j = 0; j < n; j++) {
-      offsetsArray.push(i);
-      offsetsArray.push(j);
-      offsetsArray.push(0);
+  let trans1Array = [];
+  let trans2Array = [];
+  let trans3Array = [];
+  let trans4Array = [];
 
-      colorsArray.push(i / n);
-      colorsArray.push(j / n);
-      colorsArray.push(1.0);
-      colorsArray.push(1.0); // Alpha channel
-    }
+  for (let i = 0; i < transformations.length; i++) {
+    let trans = transformations[i];
+
+    trans1Array.push(trans[0]);
+    trans1Array.push(trans[1]);
+    trans1Array.push(trans[2]);
+    trans1Array.push(trans[3]);
+
+    trans2Array.push(trans[4]);
+    trans2Array.push(trans[5]);
+    trans2Array.push(trans[6]);
+    trans2Array.push(trans[7]);
+
+    trans3Array.push(trans[8]);
+    trans3Array.push(trans[9]);
+    trans3Array.push(trans[10]);
+    trans3Array.push(trans[11]);
+
+    trans4Array.push(trans[12]);
+    trans4Array.push(trans[13]);
+    trans4Array.push(trans[14]);
+    trans4Array.push(trans[15]);
+
+    colorsArray.push(col[0]);
+    colorsArray.push(col[1]);
+    colorsArray.push(col[2]);
+    colorsArray.push(1.0);
   }
-  let offsets: Float32Array = new Float32Array(offsetsArray);
+
   let colors: Float32Array = new Float32Array(colorsArray);
-  square.setInstanceVBOs(offsets, colors);
-  square.setNumInstances(n * n); // grid of "particles"
+  let trans1: Float32Array = new Float32Array(trans1Array);
+  let trans2: Float32Array = new Float32Array(trans2Array);
+  let trans3: Float32Array = new Float32Array(trans3Array);
+  let trans4: Float32Array = new Float32Array(trans4Array);
+
+  mesh.setInstanceVBOs(colors, trans1, trans2, trans3, trans4);
+  mesh.setNumInstances(transformations.length);
 }
 
 function main() {
@@ -60,7 +116,9 @@ function main() {
 
   // Add controls to the gui
   const gui = new DAT.GUI();
-
+  gui.add(controls, 'rotation_angle', 10, 90);
+  gui.add(controls, 'iterations');
+  gui.add(controls, 'Load Scene');
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
   const gl = <WebGL2RenderingContext> canvas.getContext('webgl2');
@@ -74,12 +132,13 @@ function main() {
   // Initial call to load scene
   loadScene();
 
-  const camera = new Camera(vec3.fromValues(50, 50, 10), vec3.fromValues(50, 50, 0));
-
+  // const camera = new Camera(vec3.fromValues(50, 50, 10), vec3.fromValues(50, 50, 0));
+  const camera = new Camera(vec3.fromValues(10, 10, 10), vec3.fromValues(0, 3, 0));
   const renderer = new OpenGLRenderer(canvas);
   renderer.setClearColor(0.2, 0.2, 0.2, 1);
-  gl.enable(gl.BLEND);
-  gl.blendFunc(gl.ONE, gl.ONE); // Additive blending
+  // gl.enable(gl.BLEND);
+  // gl.blendFunc(gl.ONE, gl.ONE); // Additive blending
+  gl.enable(gl.DEPTH_TEST);
 
   const instancedShader = new ShaderProgram([
     new Shader(gl.VERTEX_SHADER, require('./shaders/instanced-vert.glsl')),
@@ -101,7 +160,8 @@ function main() {
     renderer.clear();
     renderer.render(camera, flat, [screenQuad]);
     renderer.render(camera, instancedShader, [
-      square,
+      cylinderMesh,
+      bushLeavesMesh,
     ]);
     stats.end();
 
