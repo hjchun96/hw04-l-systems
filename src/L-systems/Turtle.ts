@@ -24,7 +24,7 @@ export default class Turtle {
     quat.multiply(this.orientation, this.orientation, tmp);
   }
 
-  moveForward(dist: number): void{
+  moveForward(dist: number, type: string): void{
 
     let R: mat4 = mat4.create();
     mat4.fromQuat(R, this.orientation);
@@ -33,7 +33,11 @@ export default class Turtle {
     vec3.transformMat4(forward, up, R);
     let prevPos:vec3 = vec3.create();
     vec3.copy(prevPos,this.position);
-    vec3.scaleAndAdd(this.position,this.position,forward, this.scale[0] * dist);
+    if (type == 'l') {
+      vec3.scaleAndAdd(this.position,this.position,forward, this.scale[0] * dist * 3.0);
+    } else {
+      vec3.scaleAndAdd(this.position,this.position,forward, this.scale[0] * dist);
+    }
 
     this.scale[0]= this.scale[0] * Math.pow(0.9, this.depth);
     this.scale[1] = this.scale[1] * Math.pow(0.9, this.depth);
@@ -48,7 +52,7 @@ export default class Turtle {
     let R = mat4.create();
     let S = mat4.create();
     let trans = mat4.create();
-    
+
     mat4.fromTranslation(T, this.position);
     mat4.fromQuat(R, this.orientation);
 
@@ -56,7 +60,7 @@ export default class Turtle {
       mat4.fromScaling(S, this.scale);
     } else {
       let factor = 0.008 * Math.pow(0.9, this.depth);
-      mat4.fromScaling(S, vec3.fromValues(factor, factor, factor));
+      mat4.fromScaling(S, vec3.fromValues(factor, factor *2.0, factor));
     }
     mat4.multiply(trans,T, R);
     mat4.multiply(trans, trans, S);

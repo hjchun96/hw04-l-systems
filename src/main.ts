@@ -12,9 +12,10 @@ import Lsystem from'./L-systems/Lsystem';
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
 const controls = {
-  'rotation_angle': 20,
-  'iterations': 1,
+  'rotation_angle': 40,
+  'iterations': 3,
   'Load Scene': loadScene, // A function pointer, essentially
+  'Season': 'Winter',
 };
 
 let square: Square;
@@ -27,21 +28,25 @@ let cylinderMesh: Mesh;
 let bushLeavesMesh: Mesh;
 let lsystem: Lsystem;
 
-let obj0: string = readTextFile('./Cylinder.obj')
-let obj1: string = readTextFile('./BushLeaves.obj')
+let obj0: string = readTextFile('./Cylinder.obj');
+let obj1: string = readTextFile('./BushLeaves.obj');
+
+let season: number = 1;
 
 function loadScene() {
+
   square = new Square();
   square.create();
+
   screenQuad = new ScreenQuad();
   screenQuad.create();
+
   cylinderMesh = new Mesh(obj0, vec3.fromValues(0.0, 0.0, 0.0));
   cylinderMesh.create();
-
   bushLeavesMesh = new Mesh(obj1, vec3.fromValues(0.0, 0.0, 0.0));
   bushLeavesMesh.create();
 
-  axiom ='F';
+  axiom ='FF';
   transformations = [];
   lsystem = new Lsystem(axiom, controls.iterations, controls.rotation_angle);
   console.log(lsystem.grammar);
@@ -49,17 +54,33 @@ function loadScene() {
   lsystem.executeDrawing();
 
 
-  // transformations = lsystem.trans_mat;
-  // console.log(transformations.length);
-
-  let branchColor = [142./255., 139./255., 134./255., 1.0];
-  let leavesColor= [247./255., 254./255., 255./255., 1.0];
+  let branchColor:number[];
+  let leavesColor:number[];
+  if (controls.Season == "Winter") {
+    branchColor = [142./255., 139./255., 134./255., 1.0];
+    leavesColor= [247./255., 254./255., 255./255., 1.0];
+    season = 1;
+  } else if (controls.Season == "Summer") {
+    branchColor = [109./255., 79./255., 7./255., 1.0];
+    leavesColor= [84./255., 185./255., 72./255., 1.0];
+    season = 2;
+  } else if (controls.Season == "Fall") {
+    let rand = Math.random();
+    if (rand > 0.3) {
+        leavesColor= [209./255., 156./255., 25./255., 1.0];
+      } else {
+        leavesColor= [175./255., 166./255., 36./255., 1.0];
+      }
+    branchColor = [109./255., 79./255., 7./255., 1.0];
+    season = 3;
+  }
 
   setTransArrays(cylinderMesh,lsystem.branch_trans_mat, branchColor);
   setTransArrays(bushLeavesMesh,lsystem.leaves_trans_mat, leavesColor);
 }
 
 function setTransArrays(mesh: Mesh, transformations: mat4[], col: number[]) {
+
   let colorsArray = [];
   let trans1Array = [];
   let trans2Array = [];
@@ -116,8 +137,9 @@ function main() {
 
   // Add controls to the gui
   const gui = new DAT.GUI();
-  gui.add(controls, 'rotation_angle', 10, 90);
-  gui.add(controls, 'iterations');
+  gui.add(controls, 'rotation_angle', 10, 90).step(1);
+  gui.add(controls, 'iterations').step(1);
+  gui.add(controls, 'Season', ['Winter', 'Summer', 'Fall']);
   gui.add(controls, 'Load Scene');
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
@@ -157,12 +179,13 @@ function main() {
     instancedShader.setTime(time);
     flat.setTime(time++);
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
+
     renderer.clear();
-    renderer.render(camera, flat, [screenQuad]);
+    renderer.render(camera, flat, [screenQuad], season);
     renderer.render(camera, instancedShader, [
       cylinderMesh,
       bushLeavesMesh,
-    ]);
+    ], season);
     stats.end();
 
     // Tell the browser to call `tick` again whenever it renders a new frame

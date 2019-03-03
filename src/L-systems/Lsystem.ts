@@ -36,7 +36,45 @@ export default class LSystem {
       this.setExpansionRules();
     }
 
-    // ***  Drawing Functions *** //
+
+    //***  L-System CORE Functions *** //
+
+    // Iterate the ExpansionRules on the gramma
+    expandChar(currChar: string): string {
+      if (currChar == 'F') { // I only have rules for F atm
+        return this.exp_rules.expand_branch();
+      } else if (currChar == 'L') {
+        return this.exp_rules.expand_leaves();
+      }
+    }
+
+    expandGrammar(): void {
+
+      let newGrammar = this.grammar;
+      let tmp = '';
+      for (let iter= 0; iter < this.num_iterations; iter++) {
+        for (let i=0; i < this.grammar.length; i++) {
+          let replacement = this.expandChar(newGrammar.charAt(i));
+          tmp = tmp.concat(replacement);
+        }
+        newGrammar = tmp;
+      }
+      this.grammar = newGrammar;
+    }
+
+    // Traverse grammer and apply draw function
+    executeDrawing(): void {
+
+      for (let i = 0; i < this.grammar.length; i++) {
+        let currChar = this.grammar.charAt(i);
+        let dr = this.drawing_rules.rules.get(currChar);
+        if (dr) {
+          dr();
+        }
+      }
+    }
+
+    // ***  Drawing/Expansion Functions *** //
     rotateLeft(): void {
 
       let rand = Math.random();
@@ -72,13 +110,13 @@ export default class LSystem {
 
       let curr_trans = this.turtle.getTransformation('b');
       this.branch_trans_mat.push(curr_trans);
-      this.turtle.moveForward(3.5);
+      this.turtle.moveForward(3.5, 'b');
     }
 
     drawLeaves(): void {
       let curr_trans = this.turtle.getTransformation('l');
       this.leaves_trans_mat.push(curr_trans);
-      this.turtle.moveForward(3.5 + 3.5 * Math.pow(0.9, this.turtle.depth));
+      this.turtle.moveForward(3.5 + 3.5 * Math.pow(0.9, this.turtle.depth), 'l');
     }
 
     pushState(): void {
@@ -131,49 +169,14 @@ export default class LSystem {
     setExpansionRules() {
       let erb = new Map();
       erb.set(0.2, "FF+[+F-F-FL]-[-F+F+FL]");
-      erb.set(0.4,  "FF-[+^F+FL]");
-      erb.set(0.6,  "FF+[-F-FL]~[FL]");
-      erb.set(0.8, "FF+[FF*^][*FF^FL]");
+      erb.set(0.4,  "FF-[+^F+FL][FL]+[F~FL]");
+      erb.set(0.6,  "FF+[F-FL]~[FL]");
+      erb.set(0.8, "FF-[FF*^][*FF^FL]");
 
       let ers = new Map();
       ers.set(0.0, "FL");
       this.exp_rules = new ExpansionRule(erb, ers);
     }
 
-    //***  L-System Functions *** //
 
-    // Iterate the ExpansionRules on the gramma
-    expandChar(currChar: string): string {
-      if (currChar == 'F') { // I only have rules for F atm
-        return this.exp_rules.expand_branch();
-      } else if (currChar == 'L') {
-        return this.exp_rules.expand_leaves();
-      }
-    }
-
-    expandGrammar(): void {
-
-      let newGrammar = this.grammar;
-      let tmp = '';
-      for (let iter= 0; iter < this.num_iterations; iter++) {
-        for (let i=0; i < this.grammar.length; i++) {
-          let replacement = this.expandChar(newGrammar.charAt(i));
-          tmp = tmp.concat(replacement);
-        }
-        newGrammar = tmp;
-      }
-      this.grammar = newGrammar;
-    }
-
-    // Traverse grammer and apply draw function
-    executeDrawing(): void {
-
-      for (let i = 0; i < this.grammar.length; i++) {
-        let currChar = this.grammar.charAt(i);
-        let dr = this.drawing_rules.rules.get(currChar);
-        if (dr) {
-          dr();
-        }
-      }
-    }
 }
