@@ -16,8 +16,9 @@ Winter   				 |  Summer     			| Fall    		 |
 :-------------------:|:----------------------:|:-------------------:
 ![](Images/Winter.png)  |  ![](Images/Summer.png)|![](Images/Fall.png)|
 
+
 The scene was inspired by the look below, which depicts a tree with leaves covered in snow.
-![](Images/Inspiration.PNG)
+![](Images/Inspiration.png)
 
 
 Implementation Details
