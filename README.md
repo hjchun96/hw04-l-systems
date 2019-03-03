@@ -26,10 +26,15 @@ Implementation Details
 ### L Systems
 * `Lsystem` holds most logic, including the functions outlining the drawing rule as well as expansion rule. This decision was made because
 it was easier to bind functions as well as access turtle's core functionalities used in drawing. My L system is defined as the following:
+
 `F`,`L`: Draw Branch and Leaf
+
 `[`, `]`:Push and Pop
+
 `+`,`-`: Rotate Right and Left
+
 `*`: Turn around (rotating 180 degrees)
+
 `^`, `~`: Angle up and down
 
 * `ExpansionRule` contains the logic for selecting a rule for expansion, which is done probabilistically using a randomly generated number.
