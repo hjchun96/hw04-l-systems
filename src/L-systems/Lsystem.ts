@@ -80,8 +80,10 @@ export default class LSystem {
       let rand = Math.random();
       if (rand > 0.2) {
         this.turtle.rotate(this.lr_rot, 0., 0.);
-      } else {
-        this.turtle.rotate(0., 0., this.lr_rot);
+      } else if (rand > 0.4) {
+        this.turtle.rotate(this.lr_rot + 10, 0., 0.);
+      }else {
+        this.turtle.rotate(0.,this.lr_rot,0. );
       }
     }
 
@@ -89,8 +91,10 @@ export default class LSystem {
       let rand = Math.random();
       if (rand > 0.2) {
         this.turtle.rotate(-this.lr_rot, 0., 0.);
+      } else if (rand > 0.4) {
+        this.turtle.rotate(-this.lr_rot - 10, 0., 0.);
       } else {
-        this.turtle.rotate(0., 0., -this.lr_rot);
+        this.turtle.rotate(0., -this.lr_rot,0.);
       }
     }
 
@@ -99,18 +103,18 @@ export default class LSystem {
     }
 
     angleUp(): void {
-        this.turtle.rotate(0., this.ud_rot, 0.);
+        this.turtle.rotate(0., 0., this.ud_rot);
     }
 
     angleDown(): void {
-        this.turtle.rotate(0., -this.ud_rot, 0.);
+        this.turtle.rotate(0., -0., this.ud_rot);
     }
 
     drawBranch(): void {
 
       let curr_trans = this.turtle.getTransformation('b');
       this.branch_trans_mat.push(curr_trans);
-      this.turtle.moveForward(3.5, 'b');
+      this.turtle.moveForward(4.0, 'b');
     }
 
     drawLeaves(): void {
@@ -121,9 +125,7 @@ export default class LSystem {
 
     pushState(): void {
       let copy = this.copy(this.turtle);
-      console.log(copy);
       this.turtle_stack.push(copy);
-      this.turtle.depth++;
     }
 
     popState(): void{
@@ -131,7 +133,7 @@ export default class LSystem {
       vec3.copy(this.turtle.position, popped.position);
       quat.copy(this.turtle.orientation, popped.orientation);
       vec3.copy(this.turtle.scale,popped.scale);
-      this.turtle.depth = popped.depth--;
+      this.turtle.depth = popped.depth;
     }
 
     copy(turtle: Turtle): Turtle {
@@ -169,9 +171,9 @@ export default class LSystem {
     setExpansionRules() {
       let erb = new Map();
       erb.set(0.2, "FF+[+F-F-FL]-[-F+F+FL]");
-      erb.set(0.4,  "FF-[+^F+FL][FL]+[F~FL]");
-      erb.set(0.6,  "FF+[F-FL]~[FL]");
-      erb.set(0.8, "FF-[FF*^][*FF^FL]");
+      erb.set(0.4,  "FF-[F+^F+FL]-[FL]+[F~FL]");
+      erb.set(0.6,  "FF+[F-FL][FL]");
+      erb.set(0.8, "FF-[FF*^]-[*FF^FL]");
 
       let ers = new Map();
       ers.set(0.0, "FL");

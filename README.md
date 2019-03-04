@@ -31,11 +31,13 @@ it was easier to bind functions as well as access turtle's core functionalities 
 
 `[`, `]`:Push and Pop
 
-`+`,`-`: Rotate Right and Left
+`+`,`-`: Rotate Right and Left, random variable changes amount of rotation as well as direction.
 
 `*`: Turn around (rotating 180 degrees)
 
 `^`, `~`: Angle up and down
+
+Four rules are randomly selected by a 25% possibility that is varied as much as possible in direction in order to minimize self collision, which still does take place.
 
 * `ExpansionRule` contains the logic for selecting a rule for expansion, which is done probabilistically using a randomly generated number.
 * `DrawingRule` only holds the rules dictionary and is just an empty shell class.

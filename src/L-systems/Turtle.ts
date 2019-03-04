@@ -8,6 +8,7 @@ export default class Turtle {
   orientation: quat;
   depth: number; // Height will be halved as depth increases
   scale: vec3;
+  step: number;
   // leaves_transform: mat4[];
   // branch_transform
 
@@ -15,7 +16,8 @@ export default class Turtle {
     this.position = pos;
     this.orientation = orient;
     this.depth = 0;
-    this.scale = vec3.fromValues(0.4, 1.0, 0.4);
+    this.scale = vec3.fromValues(0.3, 1.0, 0.3);
+    this.step = 5.5;
   }
 
   rotate(x: number, y:number, z:number): void {
@@ -34,14 +36,14 @@ export default class Turtle {
     let prevPos:vec3 = vec3.create();
     vec3.copy(prevPos,this.position);
     if (type == 'l') {
-      vec3.scaleAndAdd(this.position,this.position,forward, this.scale[0] * dist * 3.0);
+      vec3.scaleAndAdd(this.position,this.position,forward, this.scale[0] * (this.step + 1.0));
     } else {
-      vec3.scaleAndAdd(this.position,this.position,forward, this.scale[0] * dist);
+      vec3.scaleAndAdd(this.position,this.position,forward, this.scale[0] * this.step);
     }
-
-    this.scale[0]= this.scale[0] * Math.pow(0.9, this.depth);
-    this.scale[1] = this.scale[1] * Math.pow(0.9, this.depth);
-    this.scale[2]= this.scale[2] * Math.pow(0.9, this.depth);
+    //
+    this.scale[0]= this.scale[0] * Math.pow(0.95, this.depth);
+    this.scale[1] = this.scale[1] * Math.pow(0.95, this.depth);
+    this.scale[2]= this.scale[2] * Math.pow(0.95, this.depth);
     this.depth++;
   }
 
@@ -59,8 +61,8 @@ export default class Turtle {
     if (type == 'b') {
       mat4.fromScaling(S, this.scale);
     } else {
-      let factor = 0.008 * Math.pow(0.9, this.depth);
-      mat4.fromScaling(S, vec3.fromValues(factor, factor *2.0, factor));
+      let factor = 0.008 * Math.pow(0.95, this.depth);
+      mat4.fromScaling(S, vec3.fromValues(factor, factor, factor));
     }
     mat4.multiply(trans,T, R);
     mat4.multiply(trans, trans, S);

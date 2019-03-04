@@ -49,7 +49,6 @@ function loadScene() {
   axiom ='FF';
   transformations = [];
   lsystem = new Lsystem(axiom, controls.iterations, controls.rotation_angle);
-  console.log(lsystem.grammar);
   lsystem.expandGrammar();
   lsystem.executeDrawing();
 
@@ -155,7 +154,7 @@ function main() {
   loadScene();
 
   // const camera = new Camera(vec3.fromValues(50, 50, 10), vec3.fromValues(50, 50, 0));
-  const camera = new Camera(vec3.fromValues(10, 10, 10), vec3.fromValues(0, 3, 0));
+  const camera = new Camera(vec3.fromValues(10, 10, 10), vec3.fromValues(0, 5, 0));
   const renderer = new OpenGLRenderer(canvas);
   renderer.setClearColor(0.2, 0.2, 0.2, 1);
   // gl.enable(gl.BLEND);

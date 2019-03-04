@@ -5,15 +5,12 @@ export default class ExpansionRule {
   leaves_expansions: Map<number, string> = new Map();
 
   constructor(branch_expansions: Map<number, string>, leaves_expansions: Map<number, string>) {
-    // this.precondition = prevChar;
     this.branch_expansions = branch_expansions;
     this.leaves_expansions = leaves_expansions;
   }
 
   expand_branch() : string {
-    console.log("IN HERE");
-    let rand = Math.random(); // set range?
-    console.log(rand);
+    let rand = Math.random(); 
     if (rand < 0.25) {
       return this.branch_expansions.get(0.2);
     } else if (rand < 0.5) {
